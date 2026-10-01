@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: milkygalaxy/frontend:latest
+        imagePullPolicy: Always
+        env:
+        - name: API_URL
+          value: https://demo.ksiddhiapphub.org
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "350Mi"
+            cpu: "250m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: milkygalaxy/backend:latest
+        imagePullPolicy: Always
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: my-postgresql-credentials
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: my-postgresql-credentials
+              key: password
+        - name: POSTGRES_HOST
+          value: postgres-svc
+        - name: DB_PORT
+          value: "5432"
+        - name: POSTGRES_DB
+          value: users_database
+        ports:
+        - containerPort: 4000
+        readinessProbe:
+          httpGet:
+            path: /test
+            port: 4000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /test
+            port: 4000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "350Mi"
+            cpu: "250m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"

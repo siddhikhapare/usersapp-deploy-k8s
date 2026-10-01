@@ -1,0 +1,15 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: my-postgresql
+  namespace: default
+spec:
+  instances: 2
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      database: users_database
+      owner: myuser
+      secret:
+        name: my-postgresql-credentials
